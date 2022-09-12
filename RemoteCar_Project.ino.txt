@@ -1,0 +1,134 @@
+// A program that processes the inputs from the Raspberry Pi, then makes the motors spin accordingly.
+// Authors: Ali Rajan, Sahil Butt
+// Date: 21 June, 2022
+// Culminating Project
+// Course: TEJ4M1-6A
+// Teacher: Mr. Radulovic
+
+// The pins for the motor on the right side of the car
+int motor1Dir = 8;
+int motor1Speed = 9;
+// The pins for the motor on the left side of the car
+int motor2Dir = 13;
+int motor2Speed = 11;
+
+int enablePin = 6;  // For the motor shield
+// Pins for inputs from the Raspberry Pi and their respective input values
+int motor1InputPin = 2;
+int motor2InputPin = 3;
+int activationPin = 4;   // The motors spin when the input from this pin is HIGH
+int motor1Input;
+int motor2Input;
+int activate;
+unsigned long prevInputTime = 0;   // The time that input was previously processed
+
+void setup()
+{
+    pinMode(motor1Dir, OUTPUT);
+    pinMode(motor1Speed, OUTPUT);
+    pinMode(motor2Dir, OUTPUT);
+    pinMode(motor2Speed, OUTPUT);
+    
+    pinMode(enablePin, OUTPUT);
+    digitalWrite(enablePin, HIGH);
+    pinMode(motor1InputPin, INPUT);
+    pinMode(motor2InputPin, INPUT);
+    pinMode(activationPin, INPUT);
+}
+
+/**
+ * Makes the motors spin forward.
+ * @param speed The speed of the motors, an integer in the range 0 to 255 (inclusive).
+ */
+void moveForward(int speed = 150)
+{
+    digitalWrite(motor1Dir, HIGH);
+    analogWrite(motor1Speed, speed);
+    digitalWrite(motor2Dir, HIGH);
+    analogWrite(motor2Speed, speed);
+}
+
+/**
+ * Makes the motors spin backward.
+ * @param speed The speed of the motors, an integer in the range 0 to 255 (inclusive).
+ */
+void moveBackward(int speed = 150)
+{
+    digitalWrite(motor1Dir, LOW);
+    analogWrite(motor1Speed, speed);
+    digitalWrite(motor2Dir, LOW);
+    analogWrite(motor2Speed, speed);
+}
+
+/**
+ * Makes the car turn left.
+ * @param speed The speed of the motors, an integer in the range 0 to 255 (inclusive).
+ */
+void turnLeft(int speed = 100)
+{
+    // Make the right motor spin forward
+    digitalWrite(motor1Dir, HIGH);
+    analogWrite(motor1Speed, speed);
+    // Make the left motor spin backward
+    digitalWrite(motor2Dir, LOW);
+    analogWrite(motor2Speed, speed);
+}
+
+/**
+ * Makes the car turn right.
+ * @param speed The speed of the motors, an integer in the range 0 to 255 (inclusive).
+ */
+void turnRight(int speed = 100)
+{
+    // Make the right motor spin backward
+    digitalWrite(motor1Dir, LOW);
+    analogWrite(motor1Speed, speed);
+    // Make the left motor spin forward
+    digitalWrite(motor2Dir, HIGH);
+    analogWrite(motor2Speed, speed);
+}
+
+/**
+ * Handles the inputs from the Raspberry Pi to remote control the motors.
+ * @param motor1Input The input for motor 1.
+ * @param motor2Input The input for motor 2.
+ * @param activate If this is LOW, the motors are stopped.
+ */
+void remoteControl(int motor1Input, int motor2Input, int activate)
+{
+    if (activate == LOW)
+    {
+        moveForward(0);     // Makes the motors stop spinning
+    }
+    // Each permutation of motor1Input and motor2Input results in a different state
+    else if (motor1Input == HIGH && motor2Input == HIGH)
+    {
+        moveForward();
+    }
+    else if (motor1Input == LOW && motor2Input == LOW)
+    {
+        moveBackward();
+    }
+    else if (motor1Input == HIGH && motor2Input == LOW)
+    {
+        turnLeft();
+    }
+    else if (motor1Input == LOW && motor2Input == HIGH)
+    {
+        turnRight();
+    }
+}
+
+void loop()
+{
+    if (millis() - prevInputTime >= 25)   // Process new inputs every 25 milliseconds
+    {
+        // Reading the inputs from the pins
+        motor1Input = digitalRead(motor1InputPin);
+        motor2Input = digitalRead(motor2InputPin);
+        activate = digitalRead(activationPin);
+        // Changing the state of the motors based on the inputs
+        remoteControl(motor1Input, motor2Input, activate);
+        prevInputTime = millis();   // Updating the previous input processing time 
+    }
+}
