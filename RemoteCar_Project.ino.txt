@@ -1,9 +1,5 @@
 // A program that processes the inputs from the Raspberry Pi, then makes the motors spin accordingly.
 // Authors: Ali Rajan, Sahil Butt
-// Date: 21 June, 2022
-// Culminating Project
-// Course: TEJ4M1-6A
-// Teacher: Mr. Radulovic
 
 // The pins for the motor on the right side of the car
 int motor1Dir = 8;
